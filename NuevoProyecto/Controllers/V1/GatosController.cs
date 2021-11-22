@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CatProject.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NuevoProyecto.Controllers.V1.ViewModels;
@@ -12,27 +13,27 @@ namespace NuevoProyecto.Controllers.V1
     [ApiController]
     public class GatosController : ControllerBase
     {
-        List<GatoViewModel> gatos = new List<GatoViewModel>
+        private readonly GatosContexto contexto;
+
+        public GatosController(GatosContexto contexto)
         {
-            new GatoViewModel {Nombre= "Luna", Edad = 13, Raza= "Siames"},
-            new GatoViewModel {Nombre= "Milo", Edad = 12, Raza= "Persa"},
-            new GatoViewModel {Nombre= "Lupe", Edad = 14, Raza= "Siames"}
-        };
+            this.contexto = contexto;
+        }
 
         [HttpGet]
         public ActionResult<List<GatoViewModel>> Get()
         {
-            return Ok(gatos);
+            return Ok(contexto.Gato);
         }
 
         [HttpGet("{nombre}")]
         public ActionResult<GatoViewModel> Get(string nombre)
         {
             //Primero me fijo si el gato existe dentro de mi colección
-            if (gatos.Exists(gato => gato.Nombre == nombre))
+            if (contexto.Gato.ToList().Exists(gato => gato.Nombre == nombre))
             {
                 //Si lo encuentro, lo busco y lo devuelvo
-                var gato = gatos.Find(gato => gato.Nombre == nombre);
+                var gato = contexto.Gato.ToList().Find(gato => gato.Nombre == nombre);
                 return Ok(gato);
             }
             else
@@ -44,11 +45,12 @@ namespace NuevoProyecto.Controllers.V1
 
         [HttpPost]
         [Route("[action]")]
-        public ActionResult<List<GatoViewModel>> Adoptar([FromBody]GatoViewModel unGato)
+        public ActionResult<List<GatoViewModel>> Adoptar([FromBody] GatoViewModel unGato)
         {
             //Agrego el gato a la colección y luego regreso la colección
-            gatos.Add(unGato);
-            return Ok(gatos);
+            contexto.Gato.Add(new Gato { Nombre = unGato.Nombre, Edad = unGato.Edad, Raza = unGato.Raza});
+            contexto.SaveChanges();
+            return Ok(contexto.Gato);
         }
 
         [HttpPut]
@@ -56,16 +58,19 @@ namespace NuevoProyecto.Controllers.V1
         public ActionResult<List<GatoViewModel>> Modificar([FromBody]GatoViewModel unGato, string nombre)
         {
             //Primero me fijo si el gato existe dentro de mi colección
-            if (gatos.Exists(gato => gato.Nombre == nombre))
+            if (contexto.Gato.ToList().Exists(gato => gato.Nombre == nombre))
             {
                 //Busco al gato dentro de la colección mediante su nombre
-                var gato = gatos.Find(gato => gato.Nombre == nombre);
+                var gato = contexto.Gato.ToList().Find(gato => gato.Nombre == nombre);
                 //Modifico sus propiedades
                 gato.Nombre = unGato.Nombre;
                 gato.Edad = unGato.Edad;
                 gato.Raza = unGato.Raza;
+
+                contexto.SaveChanges();
+
                 //Devuelvo a todos los gatos
-                return Ok(gatos);
+                return Ok(contexto.Gato);
             }
             else
             {
@@ -80,11 +85,15 @@ namespace NuevoProyecto.Controllers.V1
         public ActionResult<List<GatoViewModel>> Regalar(string nombre)
         {
             //Primero busco al gato mediante su nombre
-            var gatoARegalar = gatos.Find(gato => gato.Nombre == nombre);
-            //Luego lo quito de la lista
-            var success = gatos.Remove(gatoARegalar);
-            if (success)
+            var gatoARegalar = contexto.Gato.ToList().Find(gato => gato.Nombre == nombre);
+            
+            if (gatoARegalar != null)
             {
+                //Luego lo quito de la lista
+                contexto.Gato.Remove(gatoARegalar);
+
+                contexto.SaveChanges();
+
                 return Ok($"Regalaste a uno de tus gatos. ¡Adios {nombre}!");
             }
             else

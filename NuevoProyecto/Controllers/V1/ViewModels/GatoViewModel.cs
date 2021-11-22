@@ -9,7 +9,11 @@ namespace NuevoProyecto.Controllers.V1.ViewModels
     {
         public string Nombre { get; set; }
         public int Edad { get; set; }
-        public string Raza { get; set; }
-        
+        public string Raza { get; set; }        
+    }
+
+    public class GatoResponseViewModel : GatoViewModel
+    {
+        public int IdGato { get; set; }
     }
 }
