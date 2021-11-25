@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CatProject.Controllers.V1.ViewModels;
 using CatProject.Models;
 using JWT.Algorithms;
 using JWT.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -24,7 +26,6 @@ namespace NuevoProyecto.Controllers.V1
             this.contexto = contexto;
             this.configuration = configuration;
         }
-
         private bool ValidarToken(string token)
         {
             try
@@ -56,7 +57,7 @@ namespace NuevoProyecto.Controllers.V1
         }
 
         [HttpGet("{nombre}")]
-        public ActionResult<GatoViewModel> Get([FromHeader] string token, [FromQuery] string nombre)
+        public ActionResult<GatoViewModel> Get([FromHeader] string token, string nombre)
         {
             if (!ValidarToken(token)) return Unauthorized();
 
@@ -88,7 +89,7 @@ namespace NuevoProyecto.Controllers.V1
 
         [HttpPut]
         [Route("[action]/{nombre}")]
-        public ActionResult<List<GatoViewModel>> Modificar([FromHeader] string token, [FromBody]GatoViewModel unGato, string nombre)
+        public ActionResult<List<GatoViewModel>> Modificar([FromHeader] string token, [FromBody] GatoViewModel unGato, string nombre)
         {
             if (!ValidarToken(token)) return Unauthorized();
 
@@ -117,7 +118,7 @@ namespace NuevoProyecto.Controllers.V1
 
         [HttpDelete]
         [Route("[action]/{nombre}")]
-        public ActionResult<List<GatoViewModel>> Regalar([FromHeader] string token, [FromQuery] string nombre)
+        public ActionResult<List<GatoViewModel>> Regalar([FromHeader] string token, string nombre)
         {
             if (!ValidarToken(token)) return Unauthorized();
 
