@@ -49,3 +49,13 @@ Referencia: https://docs.microsoft.com/en-us/ef/core/cli/dotnet#dotnet-ef-dbcont
 5. Colocar el connection string en el archivo **appsettings.json** con un idenficador asociado ("gatos_db")
 
 6. Realizar la configuracion del archivo Startup.cs
+
+# JWT
+
+Instalar Paquetes Nuget utilizados en el proyecto C#
+
+Version: 8.6.0
+
+- JWT
+
+Referencia: https://github.com/jwt-dotnet/jwt
