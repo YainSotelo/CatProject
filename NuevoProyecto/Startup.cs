@@ -38,6 +38,16 @@ namespace NuevoProyecto
 
             //configuramos el tipo de ciclo de vida del objeto (GatosContexto) a inyectar a futuro en los controllers
             services.AddScoped<DbContext, GatosContexto>();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CrossOriginResourceSharingPolicy",
+                builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                );
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,6 +65,8 @@ namespace NuevoProyecto
             }
 
             app.UseRouting();
+
+            app.UseCors("CrossOriginResourceSharingPolicy");
 
             app.UseEndpoints(endpoints =>
             {

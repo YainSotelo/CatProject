@@ -49,7 +49,7 @@ namespace NuevoProyecto.Controllers.V1
         }
 
         [HttpGet]
-        public ActionResult<List<GatoViewModel>> Get([FromHeader] string token)
+        public ActionResult<List<GatoResponseViewModel>> Get([FromHeader] string token)
         {
             if (!ValidarToken(token)) return Unauthorized();
 
@@ -57,7 +57,7 @@ namespace NuevoProyecto.Controllers.V1
         }
 
         [HttpGet("{nombre}")]
-        public ActionResult<GatoViewModel> Get([FromHeader] string token, string nombre)
+        public ActionResult<GatoResponseViewModel> Get([FromHeader] string token, string nombre)
         {
             if (!ValidarToken(token)) return Unauthorized();
 
@@ -87,17 +87,35 @@ namespace NuevoProyecto.Controllers.V1
             return Ok(contexto.Gato);
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public ActionResult<List<GatoViewModel>> AdoptarMuchos([FromHeader] string token, [FromBody] List<GatoViewModel> unosGatos)
+        {
+            if (!ValidarToken(token)) return Unauthorized();
+
+            var gatos = new List<Gato>();
+            //Agrego el gato a la colección y luego regreso la colección
+            foreach (var unGato in unosGatos)
+            {
+                var gato = new Gato { Nombre = unGato.Nombre, Edad = unGato.Edad, Raza = unGato.Raza };
+                contexto.Gato.Add(gato);
+            }
+            
+            contexto.SaveChanges();
+            return Ok(contexto.Gato);
+        }
+
         [HttpPut]
-        [Route("[action]/{nombre}")]
-        public ActionResult<List<GatoViewModel>> Modificar([FromHeader] string token, [FromBody] GatoViewModel unGato, string nombre)
+        [Route("[action]/{idGato}")]
+        public ActionResult<List<GatoViewModel>> Modificar([FromHeader] string token, [FromBody] GatoViewModel unGato, int idGato)
         {
             if (!ValidarToken(token)) return Unauthorized();
 
             //Primero me fijo si el gato existe dentro de mi colección
-            if (contexto.Gato.ToList().Exists(gato => gato.Nombre == nombre))
+            if (contexto.Gato.ToList().Exists(gato => gato.IdGato == idGato))
             {
                 //Busco al gato dentro de la colección mediante su nombre
-                var gato = contexto.Gato.ToList().Find(gato => gato.Nombre == nombre);
+                var gato = contexto.Gato.ToList().Find(gato => gato.IdGato == idGato);
                 //Modifico sus propiedades
                 gato.Nombre = unGato.Nombre;
                 gato.Edad = unGato.Edad;
@@ -106,12 +124,12 @@ namespace NuevoProyecto.Controllers.V1
                 contexto.SaveChanges();
 
                 //Devuelvo a todos los gatos
-                return Ok(contexto.Gato);
+                return Ok(gato.IdGato);
             }
             else
             {
                 //Si no lo encuentro mando un BadRequest con mensaje de error
-                return BadRequest($"No tienes un gato con el nombre {nombre}");
+                return BadRequest($"No tienes un gato con el idGato {idGato}");
             }
            
         }
